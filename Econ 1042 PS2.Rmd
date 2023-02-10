@@ -1,0 +1,26 @@
+---
+title: "Econ 1042 PS2"
+author: "Owen Asnis"
+date: "2023-02-13"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readr)
+```
+
+# Data Wrangling 
+
+```{r data wrangling, message=FALSE}
+
+players <- read_delim("nhlps2.csv", delim = "\t", 
+    escape_double = FALSE, trim_ws = TRUE)
+
+standings <- read_csv("standings_2018_2019.csv", 
+                      show_col_types = FALSE) %>% 
+  select(-c(...11, ...12, ...13, ...14, ...15))
+
+```
+
