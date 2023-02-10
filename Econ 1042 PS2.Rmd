@@ -10,7 +10,6 @@ knitr::opts_chunk$set(echo = TRUE)
 options(scipen = 3)
 library(tidyverse)
 library(readr)
-library(estimatr)
 ```
 
 # Data Wrangling 
@@ -42,8 +41,8 @@ standings <- read_csv("standings_2018_2019.csv",
 
 ```{r Q4}
 
-model <- lm_robust(lagged_pdo ~ pdo, 
-                   data = players)
+model <- lm(lagged_pdo ~ pdo, 
+            data = players)
 
 pdo_variable <- tibble(pdo = 103.38)
 
@@ -64,12 +63,14 @@ percentile <- round(((under/total) * 100), digits = 0)
 
 sprintf("Corresponding percentile: %sst", percentile)
 
+summary(model)
+
 ```
 
 # Question 5 
 
 ```{r Q5}
 
-# Not sure 
+ 
 
 ```
