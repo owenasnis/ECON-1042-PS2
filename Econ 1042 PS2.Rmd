@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 options(scipen = 3)
 library(tidyverse)
 library(readr)
+library(lmtest)
 ```
 
 # Data Wrangling 
@@ -41,12 +42,16 @@ standings <- read_csv("standings_2018_2019.csv",
 
 ```{r Q4}
 
-model <- lm(lagged_pdo ~ pdo, 
-            data = players)
+pdo_model <- lm(lagged_pdo ~ pdo, 
+                data = players)
+
+pdo_bgtest <- bgtest(pdo_model, 
+                     order = 8)
+print(pdo_bgtest)
 
 pdo_variable <- tibble(pdo = 103.38)
 
-pdo_prediction <- round(predict(model, newdata = pdo_variable), 
+pdo_prediction <- round(predict(pdo_model, newdata = pdo_variable), 
                         digits = 2)
 
 sprintf("PDO forecast in year t + 1: %s", 
@@ -63,14 +68,24 @@ percentile <- round(((under/total) * 100), digits = 0)
 
 sprintf("Corresponding percentile: %sst", percentile)
 
-summary(model)
-
 ```
 
 # Question 5 
 
 ```{r Q5}
 
- 
+goals_model <- lm(lagged_goals ~ goals,
+                  data = players)
+
+goals_bgtest <- bgtest(goals_model, 
+                       order = 8)
+print(goals_bgtest)
+
+cfrel_model <- lm(lagged_cfrel_percent ~ cfrel_percent, 
+                     data = players)
+
+cfrel_bgtest <- bgtest(cfrel_model, 
+                       order = 8)
+print(cfrel_bgtest)
 
 ```
