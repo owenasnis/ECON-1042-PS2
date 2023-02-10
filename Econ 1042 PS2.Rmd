@@ -7,8 +7,10 @@ output: pdf_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+options(scipen = 3)
 library(tidyverse)
 library(readr)
+library(estimatr)
 ```
 
 # Data Wrangling 
@@ -30,4 +32,45 @@ standings <- read_csv("standings_2018_2019.csv",
 
 # Question 2 
 
-### Corsi is the net difference in shots taken by your team and the other team, as defined by the problem set. Therefore, this variable is trying to measure how good a player is at generating shots for their team and limiting shots for the team they're playing. Like was said in the response to Question 1, Corsi is useful compared to just goals scored at both the team and the player level, because it accounts for other variables, like talent of the goalie, and shows how good a player is at producing offense and providing defense beyond just simple goal statistics. 
+### Corsi is the net difference in shots taken by your team and the other team, as defined by the problem set. Therefore, this variable is trying to measure how good a player is at generating shots for their team and limiting shots for the team they're playing. Like was said in the response to Question 1, Corsi is useful compared to just goals scored at both the team and the player level, because it accounts for other variables, like talent of the goalie, and shows how good a player is at producing offense and providing defense beyond just simple goal statistics.
+
+# Question 3
+
+### We care about a player's relative Corsi versus others on your team because a single player in hockey can only impact the game so much. There are 12 forwards and 6 defenders on a hockey team, and usually 5 players on the ice at any given time. Therefore, a player could have a negative Corsi when they are playing well if their team is struggling and another player could have a positive Corsi when they are struggling if their team is playing well. Relative Corsi accounts for the skill of the team a player is on and is therefore similar to the idea of a team fixed effect. For example, if you put Connor McDavid (the best hockey player in the NHL) on the Columbus Blue Jackets (the worst team in the NHL), his Corsi might be negative because although he's a great player, his team stinks. However, he would likely have a positive relative Corsi, because he would have a higher Corsi rating than many, if not all, of the players on his team. Here, relative Corsi is a better measure of the player's value. 
+
+# Question 4 
+
+```{r Q4}
+
+model <- lm_robust(lagged_pdo ~ pdo, 
+                   data = players)
+
+pdo_variable <- tibble(pdo = 103.38)
+
+pdo_prediction <- round(predict(model, newdata = pdo_variable), 
+                        digits = 2)
+
+sprintf("PDO forecast in year t + 1: %s", 
+        pdo_prediction)
+
+total <- players %>% 
+  nrow()
+
+under <- players %>% 
+  filter(pdo < pdo_prediction) %>% 
+  nrow()
+
+percentile <- round(((under/total) * 100), digits = 0)
+
+sprintf("Corresponding percentile: %sst", percentile)
+
+```
+
+# Question 5 
+
+```{r Q5}
+
+# Not sure 
+
+```
+
