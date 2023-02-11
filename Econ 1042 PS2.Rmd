@@ -22,7 +22,8 @@ players <- read_delim("nhlps2.csv", delim = "\t",
 
 standings <- read_csv("standings_2018_2019.csv", 
                       show_col_types = FALSE) %>% 
-  select(-c(...11, ...12, ...13, ...14, ...15))
+  select(-c(...11, ...12, ...13, ...14, ...15)) %>% 
+  mutate(PTS_PG = PTS / GP)
 
 ```
 
@@ -87,5 +88,45 @@ cfrel_model <- lm(lagged_cfrel_percent ~ cfrel_percent,
 cfrel_bgtest <- bgtest(cfrel_model, 
                        order = 8)
 print(cfrel_bgtest)
+
+```
+
+# Question 6 
+
+```{r Q6}
+
+goals_sum <- players %>% 
+  select(season_start, goals, lagged_goals) %>% 
+  mutate(lagged_goals = coalesce(lagged_goals,0)) %>% 
+  group_by(season_start) %>% 
+  summarise(goals = sum(goals), 
+            lagged_goals = sum(lagged_goals)) %>% 
+  filter(season_start != 2007) %>% 
+  mutate(goals_squared = (goals)^2) 
+
+goals_linear_model <- lm(lagged_goals ~ goals, data = goals_sum)
+
+predict(goals_linear_model, newdata = goals_sum)
+
+goals_quadratic_model <- lm (lagged_goals ~ goals + goals_squared, 
+                             data = goals_sum)
+
+predict(goals_quadratic_model, new_data = goals_sum)
+
+```
+
+# Question 7 
+
+```{r Q7}
+
+standings %>% 
+  filter(Year == 2019.0) %>% 
+  mutate(pythagorean_c2 = ((GF / GA)^2) / (((GF / GA)^2) + 1), 
+         pythagorean_c5 = ((GF / GA)^5) / (((GF / GA)^5) + 1))
+
+standings %>% 
+  filter(Year == 2018.5) %>% 
+  mutate(pythagorean_c2 = ((GF / GA)^2) / (((GF / GA)^2) + 1), 
+         pythagorean_c5 = ((GF / GA)^5) / (((GF / GA)^5) + 1))
 
 ```
