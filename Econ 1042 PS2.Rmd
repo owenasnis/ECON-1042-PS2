@@ -128,7 +128,7 @@ players_nona %>%
 
 # Question 7
 
-### a.)
+### a)
 ```{r Q7.1}
 
 PY_2019 <- standings %>% 
@@ -137,9 +137,13 @@ PY_2019 <- standings %>%
          PY_C5 = ((GF / GA)^5) / (((GF / GA)^5) + 1),
          W_PC = W / GP)
 
-```
+PY_2019 %>% 
+  select(PY_C2, PY_C5, W_PC)
 
-### b.)
+```
+### 2 and 5 were used for coefficients, and when the pythagorean win percentage is compared to the actual win percentage, it's clear that 2 fit the actual wins over the 2019 season best. 
+
+### b)
 ```{r Q7.2}
 
 PY_2018.5 <- standings %>% 
@@ -150,12 +154,23 @@ PY_2018.5 <- standings %>%
 
 PY_C2_2018.5 <- lm(PTS_PG ~ PY_C2, 
                    data = PY_2018.5)
-summary(PY_C2_2018.5)
+RMSE_C2 <- round(sqrt(mean(PY_C2_2018.5$residuals^2)), 
+                 digits = 3)
+
+sprintf("Root Mean Squared Error with a coefficient of 2: %s", 
+        RMSE_C2)
 
 PY_C5_2018.5 <- lm(PTS_PG ~ PY_C5, 
                    data = PY_2018.5)
-summary(PY_C5_2018.5)
+RMSE_C5 <- round(sqrt(mean(PY_C5_2018.5$residuals^2)), 
+                 digits = 3)
+
+sprintf("Root Mean Squared Error with a coefficient of 5: %s", 
+        RMSE_C5)
 
 ```
+### Using 2 as a coefficient rather than 5 minimizes the Root Mean Squared Error, which is in line with what was found in Question 7a. Pythagorean wins is an improvement over points per game in the first half, because pythagorean wins is better at determining how a team is truly playing. A team could have high points per game despite a negative goal differential and inversely, a team could have low points per game despite a positive goal differential. It was proven in baseball that run differential is a better predictor for future team performance than past winning percentage. Therefore, it would be expected that in hockey goal differential (which determines pythagorean wins) would be a better predictor for future team performance than past points percentage. 
+
+# Question 8
 
 ### I worked with Ty Thabit on this problem set. 
