@@ -173,4 +173,35 @@ sprintf("Root Mean Squared Error with a coefficient of 5: %s",
 
 # Question 8
 
+### Players with higher Relative Corsis may have been undervalued in the hockey market over this period similar to the way players with higher on base percentages were undervalued in the baseball market. Teams may have been more likely to use goals and assists as ways to value players rather than Relative Corsi.
+```{r Q8P1}
+
+players %>% 
+  filter(salary < 2) %>% 
+  arrange(desc(cfrel_percent)) %>% 
+  head(1)
+
+```
+### To find the most undervalued player (in a simple way), I found the player with the highest Relative Corsi among players with a salary under $2 million: Max Pacioretty of the Montreal Canadiens in 2012. 
+
+### I then predicted Pacioretty's goal totals for 2013 using the first model in Question 6, subtracted the average prediction from the same model, and plugged Pacioretty's added goals over the average into pythagorean wins to find what value Pacioretty could add to a team in wins. This certainly isn't a perfect way of doing this, but it resulted in a cool outcome. 
+```{r Q8P2}
+
+new_data <- players %>% 
+  filter(name == "Max.Pacioretty", 
+         season_start == 2013)
+
+MP_predict <- predict(spec1, newdata = new_data)
+
+avg_goals <- mean(players_nona$spec1_prediction)
+
+WPC_added <- round(((((100 + (MP_predict - avg_goals)) / 100)^2) / 
+                      ((((100 + (MP_predict - avg_goals)) / 100)^2) + 1) - 0.5) * 100, 
+                   digits = 3)
+
+sprintf("Win percentage added by adding Max Pacioretty over an average player: %s percent", 
+        WPC_added)
+
+```
+
 ### I worked with Ty Thabit on this problem set. 
