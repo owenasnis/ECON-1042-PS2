@@ -41,16 +41,18 @@ standings <- read_csv("standings_2018_2019.csv",
 
 # Question 4 
 
-```{r Q4}
+```{r Q4P1}
 
-pdo_model <- lm(lagged_pdo ~ pdo, 
+pdo_model <- lm(pdo ~ lagged_pdo, 
                 data = players)
+summary(pdo_model)
 
-pdo_bgtest <- bgtest(pdo_model, 
-                     order = 8)
-print(pdo_bgtest)
+```
+### According to this model, hockey relative shooting percentage (PDO) isn't very serially correlated, because both the estimate for the lagged PDO and the adjusted R-squared are very small, indicating that lagged PDO and PDO aren't intricately related. 
 
-pdo_variable <- tibble(pdo = 103.38)
+```{r Q4P2}
+
+pdo_variable <- tibble(lagged_pdo = 103.38)
 
 pdo_prediction <- round(predict(pdo_model, newdata = pdo_variable), 
                         digits = 2)
@@ -75,58 +77,85 @@ sprintf("Corresponding percentile: %sst", percentile)
 
 ```{r Q5}
 
-goals_model <- lm(lagged_goals ~ goals,
+goals_model <- lm(goals ~ lagged_goals,
                   data = players)
+summary(goals_model)
 
-goals_bgtest <- bgtest(goals_model, 
-                       order = 8)
-print(goals_bgtest)
-
-cfrel_model <- lm(lagged_cfrel_percent ~ cfrel_percent, 
+cfrel_model <- lm(cfrel_percent ~ lagged_cfrel_percent, 
                      data = players)
-
-cfrel_bgtest <- bgtest(cfrel_model, 
-                       order = 8)
-print(cfrel_bgtest)
+summary(cfrel_model)
 
 ```
+### According to these models, Relative Corsi is more replicable year to year than goals, because both the estimate for the lagged variable and the adjusted R-squared for Relative Corsi are significantly larger. This shows that lagged Relative Corsi and Relative Corsi are significantly more related than lagged goals and goals. This matches expectations: The goal statistic can be a bit random, as some players could score a ton of goals by playing against worse goalies and with better teammates and other players could score only a few goals by playing against better goalies and with worse teammates. Year to year, variables like opposing goalie skill, teammates and bounces could work together to benefit or harm a player's goal total. On the other hand, Relative Corsi eliminates many of these variables and is a better indication of a player's true value and therefore, it's expected that this variable would be more replicable year to year. 
 
 # Question 6 
 
-```{r Q6}
+```{r Q6P1}
 
-goals_sum <- players %>% 
-  select(season_start, goals, lagged_goals) %>% 
-  mutate(lagged_goals = coalesce(lagged_goals,0)) %>% 
-  group_by(season_start) %>% 
-  summarise(goals = sum(goals), 
-            lagged_goals = sum(lagged_goals)) %>% 
-  filter(season_start != 2007) %>% 
-  mutate(goals_squared = (goals)^2) 
+players_nona <- players %>% 
+  drop_na()
 
-goals_linear_model <- lm(lagged_goals ~ goals, data = goals_sum)
+spec1 <- lm(goals ~ lagged_pdo + lagged_goals + lagged_cfrel_percent + 
+              lagged_shots + lagged_assists + lagged_toi, 
+     data = players_nona)
+summary(spec1)
 
-predict(goals_linear_model, newdata = goals_sum)
-
-goals_quadratic_model <- lm (lagged_goals ~ goals + goals_squared, 
-                             data = goals_sum)
-
-predict(goals_quadratic_model, new_data = goals_sum)
+spec2 <- lm(goals ~ lagged_goals + lagged_cfrel_percent + lagged_assists, 
+     data = players_nona)
+summary(spec2)
 
 ```
+### The first specification included every lagged variable, whereas the second specification was simplified and only included 3 lagged variables. The preferred specification is the first one, which included every lagged variable, because it was a better fitted model according to adjusted R-squared.
 
-# Question 7 
+```{r Q6P2}
 
-```{r Q7}
+players_nona$spec1_prediction <- predict(spec1)
 
-standings %>% 
+players_nona %>% 
+  arrange(desc(spec1_prediction)) %>% 
+  select(name, season_start, spec1_prediction) %>% 
+  head(1)
+
+players_nona$spec2_prediction <- predict(spec2)
+
+players_nona %>% 
+  arrange(desc(spec2_prediction)) %>% 
+  select(name, season_start, spec2_prediction) %>% 
+  head(1)
+
+```
+### For the first specification, the most goals was forecasted for Alex Ovechkin in 2009, and for the second specification, the most goals was forecasted for Sidney Crosby in 2010.  
+
+# Question 7
+
+### a.)
+```{r Q7.1}
+
+PY_2019 <- standings %>% 
   filter(Year == 2019.0) %>% 
-  mutate(pythagorean_c2 = ((GF / GA)^2) / (((GF / GA)^2) + 1), 
-         pythagorean_c5 = ((GF / GA)^5) / (((GF / GA)^5) + 1))
-
-standings %>% 
-  filter(Year == 2018.5) %>% 
-  mutate(pythagorean_c2 = ((GF / GA)^2) / (((GF / GA)^2) + 1), 
-         pythagorean_c5 = ((GF / GA)^5) / (((GF / GA)^5) + 1))
+  mutate(PY_C2 = ((GF / GA)^2) / (((GF / GA)^2) + 1), 
+         PY_C5 = ((GF / GA)^5) / (((GF / GA)^5) + 1),
+         W_PC = W / GP)
 
 ```
+
+### b.)
+```{r Q7.2}
+
+PY_2018.5 <- standings %>% 
+  filter(Year == 2018.5) %>% 
+  mutate(PY_C2 = ((GF / GA)^2) / (((GF / GA)^2) + 1), 
+         PY_C5 = ((GF / GA)^5) / (((GF / GA)^5) + 1), 
+         W_PC = W / GP)
+
+PY_C2_2018.5 <- lm(PTS_PG ~ PY_C2, 
+                   data = PY_2018.5)
+summary(PY_C2_2018.5)
+
+PY_C5_2018.5 <- lm(PTS_PG ~ PY_C5, 
+                   data = PY_2018.5)
+summary(PY_C5_2018.5)
+
+```
+
+### I worked with Ty Thabit on this problem set. 
